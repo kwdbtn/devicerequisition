@@ -1,20 +1,19 @@
 <template>
   <q-layout view="hHh lpR fFf">
-
     <q-header bordered class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="drawer = !drawer" />
 
         <q-toolbar-title>
           <q-avatar>
-            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
+            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
           </q-avatar>
           D.R.
         </q-toolbar-title>
 
         <q-space />
 
-        <q-btn-dropdown stretch flat label="Kwadwo Boateng">
+        <q-btn-dropdown stretch flat :label="username">
           <q-list>
             <q-item-label header>Folders</q-item-label>
             <q-item v-for="n in 3" :key="`x.${n}`" clickable v-close-popup tabindex="0">
@@ -58,9 +57,7 @@
               <q-icon name="dashboard" />
             </q-item-section>
 
-            <q-item-section>
-              Dashboard
-            </q-item-section>
+            <q-item-section> Dashboard </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple exact to="/requests">
@@ -68,9 +65,7 @@
               <q-icon name="select_all" />
             </q-item-section>
 
-            <q-item-section>
-              All requests
-            </q-item-section>
+            <q-item-section> All requests </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>
@@ -78,9 +73,7 @@
               <q-icon name="star" />
             </q-item-section>
 
-            <q-item-section>
-              My requests
-            </q-item-section>
+            <q-item-section> My requests </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>
@@ -88,9 +81,7 @@
               <q-icon name="free_cancellation" />
             </q-item-section>
 
-            <q-item-section>
-              Expired Requests
-            </q-item-section>
+            <q-item-section> Expired Requests </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>
@@ -98,9 +89,16 @@
               <q-icon name="drafts" />
             </q-item-section>
 
-            <q-item-section>
-              Drafts
+            <q-item-section> Drafts </q-item-section>
+          </q-item>
+
+          <q-spacer />
+          <q-item clickable v-ripple @click="logout">
+            <q-item-section avatar>
+              <q-icon name="dashboard" />
             </q-item-section>
+
+            <q-item-section> Logout </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
@@ -118,31 +116,47 @@
     <q-page-container>
       <router-view />
     </q-page-container>
-
   </q-layout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import App from '../App.vue'
+import { api } from "src/boot/axios";
+import { ref, onMounted } from "vue";
+import { useRouter } from 'vue-router'
 
-const leftDrawerOpen = ref(false)
-const drawer = ref(false)
-const miniState = ref(false)
-
-const toggleLeftDrawer = () => {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+const drawer = ref(false);
+const miniState = ref(false);
+const router = useRouter();
+const token = localStorage.getItem('token')
+const username = ref(null)
 
 const drawerClick = (e) => {
   if (miniState.value) {
-    miniState.value = false
+    miniState.value = false;
 
     // notice we have registered an event with capture flag;
     // we need to stop further propagation as this click is
     // intended for switching drawer to "normal" mode only
-    e.stopPropagation()
+    e.stopPropagation();
   }
+};
+
+const getUserDetails = () => {
+  api.get("/user", {
+    headers: {
+      'Authorization': 'Bearer ' + token,
+    }
+  }).then((response) => {
+    username.value = response.data.name
+  })
 }
 
+const logout = () => {
+  localStorage.removeItem('token')
+  router.push("/login")
+}
+
+onMounted(() => {
+  getUserDetails()
+})
 </script>
