@@ -8,7 +8,15 @@ const routes = [
       { path: "/", component: () => import("pages/IndexPage.vue") },
       {
         path: "/requests",
-        component: () => import("components/TableView.vue"),
+        component: () => import("pages/DeviceRequests.vue"),
+      },
+      {
+        path: "/requests/expired",
+        component: () => import("pages/ExpiredRequests.vue"),
+      },
+      {
+        path: "/requests/mine",
+        component: () => import("pages/MyRequests.vue"),
       },
     ],
   },
@@ -16,7 +24,7 @@ const routes = [
   {
     path: "/login",
     name: "login",
-    component: () => import("components/LoginView.vue"),
+    component: () => import("pages/LoginView.vue"),
     meta: { requiresAuth: false },
   },
 

@@ -1,22 +1,6 @@
-<template>
-  <div class="q-pa-md">
-    <ToolBar @refreshTable="refreshTableData" />
-    <q-table flat bordered ref="tableRef" title="Device Requests" :rows="rows" :columns="columns" row-key="id"
-      v-model:pagination="pagination" :loading="loading" :filter="filter" binary-state-sort @request="onRequest">
-      <template v-slot:top-right>
-        <q-input rounded outlined dense debounce="300" v-model="filter" placeholder="Search">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from "vue";
-import ToolBar from "./ToolBar.vue";
+import ToolBar from "./../components/ToolBar.vue";
 import { api } from "boot/axios";
 
 const columns = [
@@ -74,7 +58,7 @@ const pagination = ref({
 
 const loadData = () => {
   api
-    .get("/device-requests")
+    .get("/device-requests/expired")
     .then((response) => {
       originalRows.value = response.data.data;
     })
@@ -92,7 +76,7 @@ const loadData = () => {
 // SELECT * FROM ... WHERE...LIMIT...
 function fetchFromServer(startRow, count, filter, sortBy, descending) {
   const data = filter
-    ? originalRows.value.filter((row) => row.user.includes(filter))
+    ? originalRows.value.filter((row) => row.model.toLowerCase().includes(filter.toLowerCase()))
     : originalRows.value.slice();
 
   // handle sortBy
@@ -100,8 +84,8 @@ function fetchFromServer(startRow, count, filter, sortBy, descending) {
     const sortFn =
       sortBy === "desc"
         ? descending
-          ? (a, b) => (a.user > b.user ? -1 : a.user < b.user ? 1 : 0)
-          : (a, b) => (a.user > b.user ? 1 : a.user < b.user ? -1 : 0)
+          ? (a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0)
+          : (a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0)
         : descending
           ? (a, b) => parseFloat(b[sortBy]) - parseFloat(a[sortBy])
           : (a, b) => parseFloat(a[sortBy]) - parseFloat(b[sortBy]);
@@ -180,3 +164,19 @@ const refreshTableData = () => {
   tableRef.value.requestServerInteraction();
 };
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <ToolBar @refreshTable="refreshTableData" />
+    <q-table flat bordered ref="tableRef" title="Expired Requests" :rows="rows" :columns="columns" row-key="id"
+      v-model:pagination="pagination" :loading="loading" :filter="filter" binary-state-sort @request="onRequest">
+      <template v-slot:top-right>
+        <q-input rounded outlined dense debounce="300" v-model="filter" placeholder="Search">
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
+    </q-table>
+  </div>
+</template>

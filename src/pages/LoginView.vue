@@ -1,3 +1,29 @@
+<script setup>
+import { api } from 'src/boot/axios'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const email = ref(null)
+const password = ref(null)
+const router = useRouter();
+const error = ref(null)
+
+const login = () => {
+    api.post('/login', {
+        email: email.value,
+        password: password.value
+    }).then((response) => {
+        if (response.data.success) {
+            localStorage.setItem('token', response.data.data.token)
+            router.push("/")
+        } else {
+            error.value = response.data.message;
+        }
+        console.log(response)
+    })
+}
+</script>
+
 <template>
     <q-layout>
         <q-page-container>
@@ -30,33 +56,6 @@
         </q-page-container>
     </q-layout>
 </template>
-  
-<script setup>
-import { api } from 'src/boot/axios'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-const email = ref(null)
-const password = ref(null)
-const router = useRouter();
-const error = ref(null)
-
-const login = () => {
-    api.post('/login', {
-        email: email.value,
-        password: password.value
-    }).then((response) => {
-        if (response.data.success) {
-            localStorage.setItem('token', response.data.data.token)
-            router.push("/")
-        } else {
-            error.value = response.data.message;
-        }
-        console.log(response)
-
-    })
-}
-</script>
   
 <style scoped>
 .q-card {
