@@ -37,10 +37,17 @@ const columns = [
     sortable: true,
   },
   {
-    name: "date",
+    name: "purchase_date",
     align: "left",
-    label: "Date",
-    field: "date",
+    label: "Purchase Date",
+    field: "purchase_date",
+    sortable: true,
+  },
+  {
+    name: "request_date",
+    align: "left",
+    label: "Request Date",
+    field: "request_date",
     sortable: true,
   },
 ];

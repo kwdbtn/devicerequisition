@@ -12,9 +12,9 @@ const filteredRequests = ref(null)
 const username = ref(null)
 const token = localStorage.getItem('token')
 
-const showNotif = (someInput) => {
+const showNotif = (message, someInput) => {
   $q.notify({
-    message: "You are not eligible for a new device until " + someInput,
+    message: message + someInput,
     color: "negative",
     icon: "warning",
     classes: "glossy"
@@ -42,25 +42,37 @@ onMounted(() => {
 })
 
 const showDialog = () => {
+  if (deviceRequests.value) {
 
-  filteredRequests.value = deviceRequests.value.filter(deviceRequest => deviceRequest.user === username.value)
-  filteredRequests.value.sort(function (a, b) {
-    return new Date(b.date) - new Date(a.date)
-  })
+    filteredRequests.value = deviceRequests.value.filter(deviceRequest => deviceRequest.user === username.value)
 
-  const latestRequest = filteredRequests.value[0]
-  const latestRequestDate = latestRequest['date']
-  // console.log(latestRequestDate);
+    if (filteredRequests.value.length > 0) {
 
-  const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
-  const today = new Date()
+      filteredRequests.value.sort(function (a, b) {
+        return new Date(b.purchase_date) - new Date(a.purchase_date)
+      })
 
-  if (futureDate <= today) {
-    newRequestDialog.value = true
+      const latestRequest = filteredRequests.value[0]
+
+      const latestRequestDate = latestRequest['purchase_date']
+
+      const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
+      const today = new Date()
+
+      if (futureDate <= today) {
+        newRequestDialog.value = true
+      } else {
+        var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        showNotif("You are not eligible for a new device until ", futureDate.toLocaleDateString("en-US", options))
+      }
+    } else {
+      newRequestDialog.value = true
+    }
+
   } else {
-    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    showNotif(futureDate.toLocaleDateString("en-US", options))
+    newRequestDialog.value = true
   }
+
 }
 </script>
 
@@ -77,7 +89,7 @@ const showDialog = () => {
       <q-separator dark vertical />
       <q-space />
       <q-separator dark vertical />
-      <q-btn stretch flat icon="refresh" size="sm" class="q-ml-sm" @click="$emit('refreshTable')">
+      <q-btn stretch flat icon="refresh" size="sm" class="q-ml-sm" @click="$emit('refreshTable')">Refresh
         <q-tooltip>Refresh Table</q-tooltip>
       </q-btn>
     </q-toolbar>

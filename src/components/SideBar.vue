@@ -14,9 +14,7 @@ const getUserDetails = () => {
             'Authorization': 'Bearer ' + token,
         }
     }).then((response) => {
-
         userID.value = response.data.id
-        console.log("...", userID.value)
     })
 }
 

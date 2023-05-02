@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import ToolBar from "./../components/ToolBar.vue";
+import MessageBanner from "./../components/MessageBanner.vue";
 import { api } from "boot/axios";
 
 const columns = [
   { name: "code", align: "left", label: "Code", field: "code", sortable: true },
-  { name: "user", align: "left", label: "User", field: "user", sortable: true },
   {
     name: "device",
     align: "left",
@@ -35,10 +35,17 @@ const columns = [
     sortable: true,
   },
   {
-    name: "date",
+    name: "purchase_date",
     align: "left",
-    label: "Date",
-    field: "date",
+    label: "Purchase Date",
+    field: "purchase_date",
+    sortable: true,
+  },
+  {
+    name: "request_date",
+    align: "left",
+    label: "Request Date",
+    field: "request_date",
     sortable: true,
   },
 ];
@@ -55,6 +62,11 @@ const pagination = ref({
   rowsPerPage: 10,
   rowsNumber: 10,
 });
+
+const showEligibility = ref(false)
+const eligibleDate = ref(null)
+const bannerMessage = ref(null)
+const refreshKey = ref(0)
 
 const user_id = ref(null);
 const username = ref(null)
@@ -76,6 +88,7 @@ const loadData = () => {
     .get("/device-requests")
     .then((response) => {
       originalRows.value = response.data.data.filter(row => row.user === username.value)
+      checkRequestEligibility()
     })
     .catch(() => {
       $q.notify({
@@ -170,8 +183,6 @@ function onRequest(props) {
 
 onMounted(() => {
   getUserDetails()
-
-  // get initial data from server (1st page)
   loadData();
   tableRef.value.requestServerInteraction();
 });
@@ -180,11 +191,39 @@ const refreshTableData = () => {
   loadData()
   tableRef.value.requestServerInteraction();
 };
+
+const dismissBanner = () => {
+  showEligibility.value = false
+}
+
+const checkRequestEligibility = () => {
+  if (originalRows.value.length > 0) {
+    originalRows.value.sort(function (a, b) {
+      return new Date(b.purchase_date) - new Date(a.purchase_date)
+    })
+    const latestRequest = originalRows.value[0]
+    const latestRequestDate = latestRequest['purchase_date']
+
+    const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
+    const today = new Date()
+
+    if (futureDate <= today) {
+      // newRequestDialog.value = true
+    } else {
+      var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      eligibleDate.value = futureDate.toLocaleDateString("en-US", options)
+      bannerMessage.value = "You are not eligible for a new device until " + eligibleDate.value
+      showEligibility.value = true
+    }
+  }
+}
 </script>
 
 <template>
   <div class="q-pa-md">
     <ToolBar @refreshTable="refreshTableData" />
+    <MessageBanner :message="bannerMessage" @dismissBanner="dismissBanner" v-if="showEligibility" />
+
     <q-table flat bordered ref="tableRef" title="My Requests" :rows="rows" :columns="columns" row-key="id"
       v-model:pagination="pagination" :loading="loading" :filter="filter" binary-state-sort @request="onRequest">
       <template v-slot:top-right>
