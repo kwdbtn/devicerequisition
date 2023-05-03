@@ -51,12 +51,12 @@ const showDialog = () => {
     if (filteredRequests.value.length > 0) {
 
       filteredRequests.value.sort(function (a, b) {
-        return new Date(b.purchase_date) - new Date(a.purchase_date)
+        return new Date(b.receipt_date) - new Date(a.receipt_date)
       })
 
       const latestRequest = filteredRequests.value[0]
 
-      const latestRequestDate = latestRequest['purchase_date']
+      const latestRequestDate = latestRequest['receipt_date']
 
       const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
       const today = new Date()
