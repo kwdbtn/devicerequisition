@@ -5,7 +5,7 @@ import MessageBanner from "./../components/MessageBanner.vue";
 import { api } from "boot/axios";
 
 const columns = [
-  { name: "code", align: "left", label: "Code", field: "code", sortable: true },
+  { name: "code", align: "left", label: "Asset Code", field: "code", sortable: true },
   {
     name: "device",
     align: "left",
@@ -35,10 +35,10 @@ const columns = [
     sortable: true,
   },
   {
-    name: "purchase_date",
+    name: "receipt_date",
     align: "left",
-    label: "Purchase Date",
-    field: "purchase_date",
+    label: "Receipt Date",
+    field: "receipt_date",
     sortable: true,
   },
   {
@@ -183,8 +183,9 @@ function onRequest(props) {
 
 onMounted(() => {
   getUserDetails()
-  loadData();
-  tableRef.value.requestServerInteraction();
+  refreshTableData()
+  loadData()
+  tableRef.value.requestServerInteraction()
 });
 
 const refreshTableData = () => {
@@ -199,10 +200,10 @@ const dismissBanner = () => {
 const checkRequestEligibility = () => {
   if (originalRows.value.length > 0) {
     originalRows.value.sort(function (a, b) {
-      return new Date(b.purchase_date) - new Date(a.purchase_date)
+      return new Date(b.receipt_date) - new Date(a.receipt_date)
     })
     const latestRequest = originalRows.value[0]
-    const latestRequestDate = latestRequest['purchase_date']
+    const latestRequestDate = latestRequest['receipt_date']
 
     const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
     const today = new Date()

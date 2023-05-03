@@ -6,7 +6,7 @@ import exportFile from 'quasar/src/utils/export-file.js'
 import useQuasar from 'quasar/src/composables/use-quasar.js'
 
 const columns = [
-  { name: "code", align: "left", label: "Code", field: "code", sortable: true },
+  { name: "code", align: "left", label: "Asset Code", field: "code", sortable: true },
   { name: "user", align: "left", label: "User", field: "user", sortable: true },
   {
     name: "device",
@@ -37,10 +37,10 @@ const columns = [
     sortable: true,
   },
   {
-    name: "purchase_date",
+    name: "receipt_date",
     align: "left",
-    label: "Purchase Date",
-    field: "purchase_date",
+    label: "Receipt Date",
+    field: "receipt_date",
     sortable: true,
   },
   {

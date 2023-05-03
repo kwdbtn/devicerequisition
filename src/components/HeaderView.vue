@@ -5,9 +5,9 @@
 
             <q-toolbar-title>
                 <q-avatar class="q-mr-md">
-                    <img src=" https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
+                    <img src="~assets/devicelogo.jpg" />
                 </q-avatar>
-                D.R.
+                <span class="text-weight-bold">Re</span>Imburse
             </q-toolbar-title>
 
             <q-space />

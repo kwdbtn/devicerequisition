@@ -4,7 +4,7 @@ import ToolBar from "./../components/ToolBar.vue";
 import { api } from "boot/axios";
 
 const columns = [
-  { name: "code", align: "left", label: "Code", field: "code", sortable: true },
+  { name: "code", align: "left", label: "Asset Code", field: "code", sortable: true },
   { name: "user", align: "left", label: "User", field: "user", sortable: true },
   {
     name: "device",
@@ -35,17 +35,17 @@ const columns = [
     sortable: true,
   },
   {
-    name: "purchase_date",
+    name: "receipt_date",
     align: "left",
-    label: "Purchase Date",
-    field: "date",
+    label: "Receipt Date",
+    field: "receipt_date",
     sortable: true,
   },
   {
     name: "request_date",
     align: "left",
     label: "Request Date",
-    field: "date",
+    field: "request_date",
     sortable: true,
   },
 ];
