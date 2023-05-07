@@ -18,6 +18,14 @@ const routes = [
         path: "/requests/mine",
         component: () => import("pages/MyRequests.vue"),
       },
+      {
+        path: "/requests/onbehalf",
+        component: () => import("pages/OnbehalfRequests.vue"),
+      },
+      {
+        path: "/requests/verification",
+        component: () => import("pages/VerificationForm.vue"),
+      },
     ],
   },
 

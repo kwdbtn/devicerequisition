@@ -6,49 +6,55 @@ import exportFile from 'quasar/src/utils/export-file.js'
 import useQuasar from 'quasar/src/composables/use-quasar.js'
 
 const columns = [
-  { name: "code", align: "left", label: "Asset Code", field: "code", sortable: true },
-  { name: "user", align: "left", label: "User", field: "user", sortable: true },
+  {
+    name: "code", align: "left", label: "Asset Code", field: "code",
+    // sortable: true 
+  },
+  {
+    name: "user", align: "left", label: "User", field: "user",
+    // sortable: true 
+  },
   {
     name: "device",
     align: "left",
     label: "Device",
     field: "device",
-    sortable: true,
+    // sortable: true,
   },
   {
     name: "model",
     align: "left",
     label: "Model",
     field: "model",
-    sortable: true,
+    // sortable: true,
   },
   {
     name: "specifications",
     align: "left",
     label: "Specification",
     field: "specifications",
-    sortable: true,
+    // sortable: true,
   },
   {
     name: "status",
     align: "left",
     label: "Status",
     field: "status",
-    sortable: true,
+    // sortable: true,
   },
   {
     name: "receipt_date",
     align: "left",
     label: "Receipt Date",
     field: "receipt_date",
-    sortable: true,
+    // sortable: true,
   },
   {
     name: "request_date",
     align: "left",
     label: "Request Date",
     field: "request_date",
-    sortable: true,
+    // sortable: true,
   },
 ];
 
@@ -87,7 +93,16 @@ const loadData = () => {
 // SELECT * FROM ... WHERE...LIMIT...
 function fetchFromServer(startRow, count, filter, sortBy, descending) {
   const data = filter
-    ? originalRows.value.filter((row) => row.model.toLowerCase().includes(filter.toLowerCase()))
+    ? originalRows.value.filter(
+      (row) => row.code.toLowerCase().includes(filter.toLowerCase())
+        || row.user.toLowerCase().includes(filter.toLowerCase())
+        || row.device.toLowerCase().includes(filter.toLowerCase())
+        || row.model.toLowerCase().includes(filter.toLowerCase())
+        || row.specifications.toLowerCase().includes(filter.toLowerCase())
+        || row.status.toLowerCase().includes(filter.toLowerCase())
+        || row.receipt_date.toLowerCase().includes(filter.toLowerCase())
+        || row.request_date.toLowerCase().includes(filter.toLowerCase())
+    )
     : originalRows.value.slice();
 
   // handle sortBy
@@ -95,8 +110,8 @@ function fetchFromServer(startRow, count, filter, sortBy, descending) {
     const sortFn =
       sortBy === "desc"
         ? descending
-          ? (a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0)
-          : (a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0)
+          ? (a, b) => (a.code > b.code ? -1 : a.code < b.code ? 1 : 0)
+          : (a, b) => (a.code > b.code ? 1 : a.code < b.code ? -1 : 0)
         : descending
           ? (a, b) => parseFloat(b[sortBy]) - parseFloat(a[sortBy])
           : (a, b) => parseFloat(a[sortBy]) - parseFloat(b[sortBy]);

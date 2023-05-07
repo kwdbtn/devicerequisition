@@ -66,9 +66,8 @@ const pagination = ref({
 const showEligibility = ref(false)
 const eligibleDate = ref(null)
 const bannerMessage = ref(null)
-const refreshKey = ref(0)
 
-const user_id = ref(null);
+const userID = ref(null);
 const username = ref(null)
 const token = localStorage.getItem('token')
 
@@ -78,33 +77,41 @@ const getUserDetails = () => {
       'Authorization': 'Bearer ' + token,
     }
   }).then((response) => {
-    user_id.value = response.data.id
+    userID.value = response.data.id
     username.value = response.data.name
+
+    loadData()
   })
 }
 
 const loadData = () => {
-  api
-    .get("/device-requests")
-    .then((response) => {
-      originalRows.value = response.data.data.filter(row => row.user === username.value)
-      checkRequestEligibility()
-    })
-    .catch(() => {
-      $q.notify({
-        color: "negative",
-        position: "top",
-        message: "Loading failed",
-        icon: "report_problem",
+  if (userID.value) {
+    api
+      .get("/device-requests/mine/" + userID.value)
+      .then((response) => {
+        originalRows.value = response.data.data//.filter(row => row.user === username.value)
+        checkRequestEligibility()
+      })
+      .catch(() => {
+
       });
-    });
-};
+  }
+
+}
 
 // emulate ajax call
 // SELECT * FROM ... WHERE...LIMIT...
 function fetchFromServer(startRow, count, filter, sortBy, descending) {
   const data = filter
-    ? originalRows.value.filter((row) => row.model.toLowerCase().includes(filter.toLowerCase()))
+    ? originalRows.value.filter(
+      (row) => row.code.toLowerCase().includes(filter.toLowerCase())
+        || row.device.toLowerCase().includes(filter.toLowerCase())
+        || row.model.toLowerCase().includes(filter.toLowerCase())
+        || row.specifications.toLowerCase().includes(filter.toLowerCase())
+        || row.status.toLowerCase().includes(filter.toLowerCase())
+        || row.receipt_date.toLowerCase().includes(filter.toLowerCase())
+        || row.request_date.toLowerCase().includes(filter.toLowerCase())
+    )
     : originalRows.value.slice();
 
   // handle sortBy
@@ -186,12 +193,12 @@ onMounted(() => {
   refreshTableData()
   loadData()
   tableRef.value.requestServerInteraction()
-});
+})
 
 const refreshTableData = () => {
   loadData()
   tableRef.value.requestServerInteraction();
-};
+}
 
 const dismissBanner = () => {
   showEligibility.value = false

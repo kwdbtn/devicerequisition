@@ -6,6 +6,8 @@ const miniState = ref(false);
 const drawer = ref(false);
 
 const userID = ref(null);
+const userJobTitle = ref(null)
+
 const token = localStorage.getItem('token')
 
 const helpAlert = ref(false)
@@ -17,6 +19,7 @@ const getUserDetails = () => {
         }
     }).then((response) => {
         userID.value = response.data.id
+        userJobTitle.value = response.data.job_title
     })
 }
 
@@ -42,7 +45,7 @@ onMounted(() => {
         <!-- drawer content -->
         <q-scroll-area class="fit" :horizontal-thumb-style="{ opacity: 0 }">
             <q-list padding>
-                <q-item clickable v-ripple exact to="/">
+                <q-item clickable v-ripple exact to="/" v-if="userJobTitle === 'SuperAdmin'">
                     <q-item-section avatar>
                         <q-icon name="dashboard" />
                     </q-item-section>
@@ -50,7 +53,7 @@ onMounted(() => {
                     <q-item-section> Dashboard </q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple exact to="/requests">
+                <q-item clickable v-ripple exact to="/requests" v-if="userJobTitle === 'SuperAdmin'">
                     <q-item-section avatar>
                         <q-icon name="select_all" />
                     </q-item-section>
@@ -58,7 +61,8 @@ onMounted(() => {
                     <q-item-section> All requests </q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple exact to="/requests/mine">
+                <q-item clickable v-ripple exact to="/requests/mine"
+                    v-if="userJobTitle === 'SuperAdmin' || userJobTitle === 'Manager' || userJobTitle === 'Director'">
                     <q-item-section avatar>
                         <q-icon name="star" />
                     </q-item-section>
@@ -66,12 +70,30 @@ onMounted(() => {
                     <q-item-section> My requests </q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple exact to="/requests/expired">
+                <q-item clickable v-ripple exact to="/requests/onbehalf"
+                    v-if="userJobTitle === 'SuperAdmin' || userJobTitle === 'Assistant'">
+                    <q-item-section avatar>
+                        <q-icon name="assistant" />
+                    </q-item-section>
+
+                    <q-item-section> My OB requests <q-tooltip>My On Behalf Of Requests</q-tooltip></q-item-section>
+                </q-item>
+
+                <q-item clickable v-ripple exact to="/requests/expired" v-if="userJobTitle === 'SuperAdmin'">
                     <q-item-section avatar>
                         <q-icon name="free_cancellation" />
                     </q-item-section>
 
                     <q-item-section> Expired Requests </q-item-section>
+                </q-item>
+
+                <q-item clickable v-ripple exact to="/requests/verification"
+                    v-if="userJobTitle === 'SuperAdmin' || userJobTitle === 'Checker'">
+                    <q-item-section avatar>
+                        <q-icon name="done_all" />
+                    </q-item-section>
+
+                    <q-item-section> Verification </q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple @click="helpAlert = true">

@@ -22,25 +22,39 @@ const showNotification = (message, color, icon) => {
     });
 };
 
+const validateInput = () => {
+    if (!email.value) {
+        showNotification("Enter email address", "negative", "warning")
+        return false
+    } else if (!password.value) {
+        showNotification("Enter password", "negative", "warning")
+        return false
+    }
+
+    return true
+}
+
 const login = () => {
-    api.post('/login', {
-        email: email.value,
-        password: password.value
-    }).then((response) => {
-        if (response.data.success) {
-            if (response.data.data.jobTitle == "Manager" || response.data.data.jobTitle == "Director" || response.data.data.jobTitle == "Assistant") {
-                showNotification(response.data.message, "positive", "recommend")
-                localStorage.setItem('token', response.data.data.token)
-                router.push("/")
+    if (validateInput()) {
+        api.post('/login', {
+            email: email.value,
+            password: password.value
+        }).then((response) => {
+            if (response.data.success) {
+                if (response.data.data.jobTitle == "Manager" || response.data.data.jobTitle == "Director" || response.data.data.jobTitle == "Assistant" || response.data.data.jobTitle == "Checker" || response.data.data.jobTitle == "SuperAdmin") {
+                    showNotification(response.data.message, "positive", "recommend")
+                    localStorage.setItem('token', response.data.data.token)
+                    router.push("/")
+                } else {
+                    showNotification("You need to be a Director or a Manager to be eligible for a device!", "negative", "warning")
+                }
             } else {
-                showNotification("You need to be a Director or a Manager to be eligible for a device!", "negative", "warning")
+                // error.value = response.data.message;
+                // console.log(response)
+                showNotification("Wrong credentials", "negative", "warning")
             }
-        } else {
-            error.value = response.data.message;
-            console.log(response)
-            showNotification("Wrong credentials", "negative", "warning")
-        }
-    })
+        })
+    }
 }
 </script>
 

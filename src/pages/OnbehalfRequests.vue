@@ -1,15 +1,18 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import ToolBar from "./../components/ToolBar.vue";
+import MessageBanner from "./../components/MessageBanner.vue";
 import { api } from "boot/axios";
 
 const columns = [
   {
-    name: "code", align: "left", label: "Asset Code", field: "code",
-    // sortable: true 
+    name: "user",
+    label: "Director/Manager",
+    field: "user",
+    // sortable: true,
   },
   {
-    name: "user", align: "left", label: "User", field: "user",
+    name: "code", align: "left", label: "Asset Code", field: "code",
     // sortable: true 
   },
   {
@@ -53,7 +56,7 @@ const columns = [
     label: "Request Date",
     field: "request_date",
     // sortable: true,
-  },
+  }
 ];
 
 const originalRows = ref([]);
@@ -69,29 +72,48 @@ const pagination = ref({
   rowsNumber: 10,
 });
 
+const showEligibility = ref(false)
+const eligibleDate = ref(null)
+const bannerMessage = ref(null)
+
+const userID = ref(null);
+const username = ref(null)
+const token = localStorage.getItem('token')
+
+const getUserDetails = () => {
+  api.get("/user", {
+    headers: {
+      'Authorization': 'Bearer ' + token,
+    }
+  }).then((response) => {
+    userID.value = response.data.id
+    username.value = response.data.name
+
+    loadData()
+  })
+}
+
 const loadData = () => {
-  api
-    .get("/device-requests/expired")
-    .then((response) => {
-      originalRows.value = response.data.data;
-    })
-    .catch(() => {
-      $q.notify({
-        color: "negative",
-        position: "top",
-        message: "Loading failed",
-        icon: "report_problem",
+  if (userID.value) {
+    api
+      .get("/device-requests/onbehalf/" + userID.value)
+      .then((response) => {
+        originalRows.value = response.data.data//.filter(row => row.user === username.value)
+        checkRequestEligibility()
+      })
+      .catch(() => {
+
       });
-    });
-};
+  }
+}
 
 // emulate ajax call
 // SELECT * FROM ... WHERE...LIMIT...
 function fetchFromServer(startRow, count, filter, sortBy, descending) {
   const data = filter
     ? originalRows.value.filter(
-      (row) => row.code.toLowerCase().includes(filter.toLowerCase())
-        || row.user.toLowerCase().includes(filter.toLowerCase())
+      (row) => row.user.toLowerCase().includes(filter.toLowerCase())
+        || row.code.toLowerCase().includes(filter.toLowerCase())
         || row.device.toLowerCase().includes(filter.toLowerCase())
         || row.model.toLowerCase().includes(filter.toLowerCase())
         || row.specifications.toLowerCase().includes(filter.toLowerCase())
@@ -176,21 +198,50 @@ function onRequest(props) {
 }
 
 onMounted(() => {
-  // get initial data from server (1st page)
-  loadData();
-  tableRef.value.requestServerInteraction();
-});
+  getUserDetails()
+  refreshTableData()
+  loadData()
+  tableRef.value.requestServerInteraction()
+})
 
 const refreshTableData = () => {
   loadData()
   tableRef.value.requestServerInteraction();
-};
+}
+
+const dismissBanner = () => {
+  showEligibility.value = false
+}
+
+const checkRequestEligibility = () => {
+  if (originalRows.value.length > 0) {
+    originalRows.value.sort(function (a, b) {
+      return new Date(b.receipt_date) - new Date(a.receipt_date)
+    })
+    const latestRequest = originalRows.value[0]
+    const latestRequestDate = latestRequest['receipt_date']
+
+    const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
+    const today = new Date()
+
+    if (futureDate <= today) {
+      // newRequestDialog.value = true
+    } else {
+      var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      eligibleDate.value = futureDate.toLocaleDateString("en-US", options)
+      bannerMessage.value = "You are not eligible for a new device until " + eligibleDate.value
+      showEligibility.value = true
+    }
+  }
+}
 </script>
 
 <template>
   <div class="q-pa-md">
     <ToolBar @refreshTable="refreshTableData" />
-    <q-table flat bordered ref="tableRef" title="Expired Requests" :rows="rows" :columns="columns" row-key="id"
+    <MessageBanner :message="bannerMessage" @dismissBanner="dismissBanner" v-if="showEligibility" />
+
+    <q-table flat bordered ref="tableRef" title="On Behalf Of Requests" :rows="rows" :columns="columns" row-key="id"
       v-model:pagination="pagination" :loading="loading" :filter="filter" binary-state-sort @request="onRequest">
       <template v-slot:top-right>
         <q-input rounded outlined dense debounce="300" v-model="filter" placeholder="Search">

@@ -15,6 +15,8 @@ const code = ref(null);
 const status = ref(null);
 const imei = ref(null);
 const receiptDate = ref('2023/03/01');
+const receiptAttachment = ref(null)
+
 const managers = ref(null)
 const managerNames = ref([])
 
@@ -32,8 +34,10 @@ const token = localStorage.getItem('token')
 const deviceRequests = ref([])
 const filteredRequests = ref([])
 
-const dateOptions = () => {
-  return receiptDate.value >= "2023/03/01" && receiptDate.value <= "2023/05/05"
+const dateOptions = (date) => {
+  let today = new Date()
+  let someDate = new Date('2023/01/01')
+  return date >= '2023/01/01' && date <= '2023/05/25'
 }
 
 const emit = defineEmits(["closeForm", "refreshTable"]);
@@ -78,7 +82,7 @@ const sendSMS = (recipient, message) => {
 
 const onSubmit = () => {
   status.value = "Submitted";
-  code.value = "DTID-" + Math.floor(1000 + Math.random() * 9000);
+  code.value = "DVID-" + Math.floor(1000 + Math.random() * 9000)
 
   if (userJobTitle.value === "Assistant") {
     const selectedManager = managers.value.filter(manager => manager['name'] === onBehalfName.value)
@@ -94,6 +98,11 @@ const onSubmit = () => {
       return
   }
 
+  if (new Date(receiptDate.value) > new Date()) {
+    showNotification("Receipt date cannot be in the future!", "negative", "warning")
+    return
+  }
+
   const formData = {
     user_id: userJobTitle.value == "Assistant" ? onBehalfID.value : userID.value,
     device: device.value,
@@ -104,20 +113,27 @@ const onSubmit = () => {
     imei: imei.value,
     code: code.value,
     status: status.value,
-    receipt_date: receiptDate.value
-  };
+    receipt_date: receiptDate.value,
+    attachment: receiptAttachment.value,
+    assistant_id: userJobTitle.value == "Assistant" ? userID.value : null
+  }
+
+  console.log(formData)
+
+  const headers = { 'Content-Type': 'multipart/form-data' }
 
   api
-    .post("/device-requests", formData)
+    .post("/device-requests", formData, { headers })
     .then((response) => {
+      console.log(response.data)
       // show successfully request creation
       const message = userJobTitle.value === "Assistant" ? "Request submitted successfully! The request code for " + onBehalfName.value + " is " + code.value : "New request raised successfully! Your request code is " + code.value
-      showNotification(message, "positive", "recommend");
+      showNotification(message, "positive", "recommend")
 
       let recipient = userJobTitle.value == "Assistant" ? onBehalfPhoneNumber.value : userPhoneNumber.value
       let smsMessage = "Your Asset code for ERP Device Reimbursement is " + code.value
 
-      sendSMS(recipient, smsMessage)
+      // sendSMS(recipient, smsMessage)
 
       // emit function to close request dialog form
       emit("closeForm");
@@ -186,8 +202,35 @@ const getDeviceRequests = () => {
     })
 }
 
+const fileSelected = (e) => {
+  receiptAttachment.value = e.target.files[0]
+  console.log("in file selected")
+}
+
+const onRejected = (rejectedFiles) => {
+  const errorMap = {
+    accept: 'Only images and PDFs allowed!',
+    'max-file-size': 'Max file size exceeded!'
+  }
+
+  const errorMessage = errorMap[rejectedFiles[0].failedPropValidation]
+
+  if (!errorMessage)
+    return
+
+  if (rejectedFiles[0].failedPropValidation) {
+    console.log("issues")
+    showNotification(errorMessage, "negative", "warning")
+  }
+}
+
+const fileUpload = (file) => {
+  const data = new FormData()
+  data.append('receipt', file, file.name)
+  return data
+}
+
 onMounted(() => {
-  console.log("in mount")
   getUserDetails()
   getManagers()
 })
@@ -195,21 +238,21 @@ onMounted(() => {
 
 <template>
   <div class="q-pa-md" style="width: 500px">
-    <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+    <q-form @submit="onSubmit" @reset="onReset" enctype="multipart/form-data" class="q-gutter-md">
       <q-select filled v-model="onBehalfName" :options="managerNames" label="On behalf of Director/Manager"
         v-if="userJobTitle === 'Assistant'" />
 
       <q-select filled v-model="device" :options="devices" label="Device" />
 
       <q-input filled v-model="model" label="Model *" hint="Device model" lazy-rules :rules="[
-          (val) => (val && val.length > 0) || 'Please type device model',
-        ]" clearable />
+        (val) => (val && val.length > 0) || 'Please type device model',
+      ]" clearable />
 
       <q-input filled type="textarea" v-model="specifications" label="Specifications" hint="Device specifications"
         lazy-rules :rules="[
-            (val) =>
-              (val && val.length > 0) || 'Please type device specification',
-          ]" clearable />
+          (val) =>
+            (val && val.length > 0) || 'Please type device specification',
+        ]" clearable />
 
       <!-- <q-toggle icon="smartphone" v-model="deviceBought" label="Device bought already?"
         @update:model-value="showDeviceDetails" /> -->
@@ -223,7 +266,7 @@ onMounted(() => {
         <template v-slot:append>
           <q-icon name="event" class="cursor-pointer">
             <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date v-model="receiptDate">
+              <q-date v-model="receiptDate" :options="dateOptions">
                 <div class="row items-center justify-end">
                   <q-btn v-close-popup label="Close" color="primary" flat />
                 </div>
@@ -232,6 +275,13 @@ onMounted(() => {
           </q-icon>
         </template>
       </q-input>
+
+      <q-file filled v-model="receiptAttachment" name="receipt" label="Receipt attachment" accept=".pdf, .jpg, image/*"
+        max-file-size="1000000" @rejected="onRejected">
+        <template v-slot:prepend>
+          <q-icon name="attach_file" />
+        </template>
+      </q-file>
 
       <div>
         <q-btn label="Submit" type="submit" color="primary" />

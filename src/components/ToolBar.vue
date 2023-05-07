@@ -9,14 +9,17 @@ const $q = useQuasar();
 const newRequestDialog = ref(false);
 const deviceRequests = ref(null)
 const filteredRequests = ref(null)
+
 const username = ref(null)
+const userJobTitle = ref(null)
+
 const token = localStorage.getItem('token')
 
 const helpAlert = ref(false)
 
-const showNotif = (message, someInput) => {
+const showNotification = (message) => {
   $q.notify({
-    message: message + someInput,
+    message: message,
     color: "negative",
     icon: "warning",
     classes: "glossy"
@@ -30,6 +33,7 @@ const getUserDetails = () => {
     }
   }).then((response) => {
     username.value = response.data.name
+    userJobTitle.value = response.data.job_title
   })
 }
 
@@ -44,35 +48,39 @@ onMounted(() => {
 })
 
 const showDialog = () => {
-  if (deviceRequests.value) {
+  if (userJobTitle.value === "Manager" || userJobTitle.value === "Director") {
+    if (deviceRequests.value) {
 
-    filteredRequests.value = deviceRequests.value.filter(deviceRequest => deviceRequest.user === username.value)
+      filteredRequests.value = deviceRequests.value.filter(deviceRequest => deviceRequest.user === username.value)
 
-    if (filteredRequests.value.length > 0) {
+      if (filteredRequests.value.length > 0) {
 
-      filteredRequests.value.sort(function (a, b) {
-        return new Date(b.receipt_date) - new Date(a.receipt_date)
-      })
+        filteredRequests.value.sort(function (a, b) {
+          return new Date(b.receipt_date) - new Date(a.receipt_date)
+        })
 
-      const latestRequest = filteredRequests.value[0]
+        const latestRequest = filteredRequests.value[0]
 
-      const latestRequestDate = latestRequest['receipt_date']
+        const latestRequestDate = latestRequest['receipt_date']
 
-      const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
-      const today = new Date()
+        const futureDate = new Date(new Date(latestRequestDate).getFullYear() + 2, new Date(latestRequestDate).getMonth(), new Date(latestRequestDate).getDate())
+        const today = new Date()
 
-      if (futureDate <= today) {
-        newRequestDialog.value = true
+        if (futureDate <= today) {
+          newRequestDialog.value = true
+        } else {
+          var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+          showNotification("You are not eligible for a new device until " + futureDate.toLocaleDateString("en-US", options))
+        }
       } else {
-        var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        showNotif("You are not eligible for a new device until ", futureDate.toLocaleDateString("en-US", options))
+        newRequestDialog.value = true
       }
+
     } else {
       newRequestDialog.value = true
     }
-
   } else {
-    newRequestDialog.value = true
+    showNotification("You need to be a director or a manager to be elligible for a device!")
   }
 
 }
@@ -81,7 +89,7 @@ const showDialog = () => {
 <template>
   <div class="q-pb-sm">
     <q-toolbar class="bg-black rounded-borders text-white">
-      <q-btn stretch flat dense icon="add" size="sm" class="q-mr-sm q-pa-md" @click="showDialog">New
+      <q-btn stretch flat dense icon="add" size="md" class="q-mr-sm q-pa-md" @click="showDialog">New
         <q-tooltip>New Device Request</q-tooltip>
       </q-btn>
       <q-separator dark vertical />
@@ -91,11 +99,11 @@ const showDialog = () => {
       <q-separator dark vertical /> -->
       <q-space />
       <q-separator dark vertical />
-      <q-btn stretch flat icon="help" size="sm" class="q-ml-sm" @click="helpAlert = true">Help
+      <q-btn stretch flat icon="help" size="md" class="q-ml-sm" @click="helpAlert = true">Help
         <q-tooltip>Need help? Click here</q-tooltip>
       </q-btn>
       <q-separator dark vertical />
-      <q-btn stretch flat icon="refresh" size="sm" class="q-ml-sm" @click="$emit('refreshTable')">Refresh
+      <q-btn stretch flat icon="refresh" size="md" class="q-ml-sm" @click="$emit('refreshTable')">Refresh
         <q-tooltip>Refresh Table</q-tooltip>
       </q-btn>
     </q-toolbar>
