@@ -133,7 +133,7 @@ const onSubmit = () => {
       let recipient = userJobTitle.value == "Assistant" ? onBehalfPhoneNumber.value : userPhoneNumber.value
       let smsMessage = "Your Asset code for ERP Device Reimbursement is " + code.value
 
-      // sendSMS(recipient, smsMessage)
+      sendSMS(recipient, smsMessage)
 
       // emit function to close request dialog form
       emit("closeForm");
@@ -277,7 +277,7 @@ onMounted(() => {
       </q-input>
 
       <q-file filled v-model="receiptAttachment" name="receipt" label="Receipt attachment" accept=".pdf, .jpg, image/*"
-        max-file-size="1000000" @rejected="onRejected">
+        max-file-size="10000000" @rejected="onRejected">
         <template v-slot:prepend>
           <q-icon name="attach_file" />
         </template>

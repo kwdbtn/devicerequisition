@@ -130,8 +130,8 @@ onMounted(() => {
 
             <q-card-section>
                 <ol class="text-h7">
-                    <li>Click on the <span class="text-weight-medium"><q-icon name="add" />New</span> button to raise a new
-                        request</li><br>
+                    <li>Click on the <span class="text-weight-medium"><q-icon name="add" />New</span> button to add a new
+                        device</li><br>
                     <li>Complete <span class="text-weight-medium">all fields</span> including inputs for serial number and
                         IMEI</li><br>
                     <li>Kindly take note of the <span class="text-weight-medium">Asset code</span> that will be generated
@@ -143,7 +143,7 @@ onMounted(() => {
                             name="refresh" />Refresh</span>
                     button to refresh the page for new data</span> <br><br>
 
-                <span>Please call MIS on xxxx if you require further assistance.</span>
+                <span>Please call MIS on 720686/265 if you require further assistance.</span>
             </q-card-section>
         </q-card>
     </q-dialog>

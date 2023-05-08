@@ -124,7 +124,7 @@ const login = () => {
                         Help</span> Buttons in the
                     application. They provide useful tips.</span> <br><br>
 
-                <span>Please call MIS on xxxx if you require further assistance.</span>
+                <span>Please call MIS on 720686/265 if you require further assistance.</span>
             </q-card-section>
         </q-card>
     </q-dialog>
