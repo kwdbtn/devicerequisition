@@ -103,6 +103,11 @@ const onSubmit = () => {
     return
   }
 
+  if (receiptAttachment.value === null) {
+    showNotification("Please attach device receipt!", "negative", "warning")
+    return
+  }
+
   const formData = {
     user_id: userJobTitle.value == "Assistant" ? onBehalfID.value : userID.value,
     device: device.value,
@@ -117,8 +122,6 @@ const onSubmit = () => {
     attachment: receiptAttachment.value,
     assistant_id: userJobTitle.value == "Assistant" ? userID.value : null
   }
-
-  console.log(formData)
 
   const headers = { 'Content-Type': 'multipart/form-data' }
 
@@ -242,13 +245,13 @@ onMounted(() => {
       <q-select filled v-model="onBehalfName" :options="managerNames" label="On behalf of Director/Manager"
         v-if="userJobTitle === 'Assistant'" />
 
-      <q-select filled v-model="device" :options="devices" label="Device" />
+      <q-select filled v-model="device" :options="devices" label="Device *" />
 
       <q-input filled v-model="model" label="Model *" hint="Device model" lazy-rules :rules="[
         (val) => (val && val.length > 0) || 'Please type device model',
       ]" clearable />
 
-      <q-input filled type="textarea" v-model="specifications" label="Specifications" hint="Device specifications"
+      <q-input filled type="textarea" v-model="specifications" label="Specifications *" hint="Device specifications"
         lazy-rules :rules="[
           (val) =>
             (val && val.length > 0) || 'Please type device specification',
@@ -257,11 +260,20 @@ onMounted(() => {
       <!-- <q-toggle icon="smartphone" v-model="deviceBought" label="Device bought already?"
         @update:model-value="showDeviceDetails" /> -->
 
-      <q-input filled v-model="serialNumber" label="Serial number" hint="Serial number" clearable v-if="deviceBought" />
+      <q-input filled v-model="serialNumber" label="Serial number *" hint="Serial number" clearable v-if="deviceBought"
+        lazy-rules :rules="[
+          (val) =>
+            (val && val.length > 0) || 'Please type serial number',
+        ]" />
 
-      <q-input filled v-model="imei" label="IMEI" hint="IMEI" clearable v-if="deviceBought" />
+      <!-- accept 15 numbers only -->
+      <q-input filled v-model="imei" inputmode="numeric" mask="###############" label="IMEI *"
+        hint="IMEI (Limited to 15 numbers)" clearable v-if="deviceBought" lazy-rules :rules="[
+          (val) =>
+            (val && val.length > 0) || 'Please type IMEI of device',
+        ]" bottom-slots counter />
 
-      <q-input filled v-model="receiptDate" mask="date" :rules="['date']" label="Receipt date" hint="Receipt date"
+      <q-input filled v-model="receiptDate" mask="date" :rules="['date']" label="Receipt date *" hint="Receipt date"
         v-if="deviceBought">
         <template v-slot:append>
           <q-icon name="event" class="cursor-pointer">
@@ -276,8 +288,11 @@ onMounted(() => {
         </template>
       </q-input>
 
-      <q-file filled v-model="receiptAttachment" name="receipt" label="Receipt attachment" accept=".pdf, .jpg, image/*"
-        max-file-size="10000000" @rejected="onRejected">
+      <q-file filled v-model="receiptAttachment" name="receipt" label="Receipt attachment *" accept=".pdf, .jpg, image/*"
+        max-file-size="10000000" @rejected="onRejected" lazy-rules :rules="[
+          (val) =>
+            (val && val.length > 0) || 'Please attach device receipt',
+        ]">
         <template v-slot:prepend>
           <q-icon name="attach_file" />
         </template>

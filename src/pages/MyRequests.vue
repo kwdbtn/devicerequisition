@@ -204,6 +204,10 @@ const dismissBanner = () => {
   showEligibility.value = false
 }
 
+const hardRefresh = () => {
+  console.log("hard refresh")
+}
+
 const checkRequestEligibility = () => {
   if (originalRows.value.length > 0) {
     originalRows.value.sort(function (a, b) {
@@ -233,7 +237,8 @@ const checkRequestEligibility = () => {
     <MessageBanner :message="bannerMessage" @dismissBanner="dismissBanner" v-if="showEligibility" />
 
     <q-table flat bordered ref="tableRef" title="My Requests" :rows="rows" :columns="columns" row-key="id"
-      v-model:pagination="pagination" :loading="loading" :filter="filter" binary-state-sort @request="onRequest">
+      v-model:pagination="pagination" :loading="loading" :filter="filter" binary-state-sort @request="onRequest"
+      @closeForm="hardRefresh">
       <template v-slot:top-right>
         <q-input rounded outlined dense debounce="300" v-model="filter" placeholder="Search">
           <template v-slot:append>

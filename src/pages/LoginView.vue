@@ -34,7 +34,7 @@ const validateInput = () => {
     return true
 }
 
-const login = () => {
+const login = async () => {
     if (validateInput()) {
         api.post('/login', {
             email: email.value,
@@ -75,9 +75,22 @@ const login = () => {
                             <q-card-section>
                                 <!-- <h5 class="text-h5 text-black text-center q-my-sm">Login</h5> -->
                                 <q-form class="q-gutter-md">
-                                    <q-input square filled clearable v-model="email" type="email" label="email" />
+                                    <q-input square filled clearable v-model="email" type="email" label="email"
+                                        hint="Outlook address" lazy-rules
+                                        :rules="[(val, rules) => rules.email(val) || 'Please enter a valid outlook address']">
+                                        <template v-slot:prepend>
+                                            <q-icon name="email" />
+                                        </template>
+                                    </q-input>
                                     <q-input square filled clearable v-model="password" type="password" label="password"
-                                        v-on:keyup.enter="login" />
+                                        hint="Outlook password" lazy-rules :rules="[
+                                            (val) =>
+                                                (val && val.length > 0) || 'Please enter your password',
+                                        ]" v-on:keyup.enter="login">
+                                        <template v-slot:prepend>
+                                            <q-icon name="lock" />
+                                        </template>
+                                    </q-input>
                                 </q-form>
                             </q-card-section>
                             <q-card-actions class="q-px-md">
@@ -124,7 +137,8 @@ const login = () => {
                         Help</span> Buttons in the
                     application. They provide useful tips.</span> <br><br>
 
-                <span>Please call MIS on 720686/265 if you require further assistance.</span>
+                <span>Please call MIS on <span class="text-weight-bold">720686/265</span> if you require further
+                    assistance.</span>
             </q-card-section>
         </q-card>
     </q-dialog>
